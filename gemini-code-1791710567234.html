@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misi Rafa: Pilih yang Tepat!</title>
+<style>
+  :root {
+    --cream: #fffaf1;
+    --ink: #654d2b;
+    --blue: #4f80b8;
+    --pink: #f2d4c8;
+    --green: #dff2df;
+    --yellow: #fff1c9;
+    --red: #ffebe2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(135deg, #fffaf1, #f4f7ff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px;
+  }
+  .game {
+    width: min(900px, 100%);
+    background: #fffdf9;
+    border: 3px solid #f0d6ca;
+    border-radius: 26px;
+    box-shadow: 0 10px 30px #7b65451c;
+    padding: clamp(18px, 4vw, 34px);
+  }
+  .top { text-align: center; }
+  .badge {
+    display: inline-block;
+    background: #e6f0ff;
+    color: #315f93;
+    border-radius: 999px;
+    padding: 7px 13px;
+    font-weight: 800;
+    font-size: .9rem;
+  }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.35rem); margin: 12px 0 8px; }
+  .intro { margin: 0 auto 20px; max-width: 650px; line-height: 1.5; }
+  .scene {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: #fff4e6;
+    border: 2px dashed #efc9b8;
+    border-radius: 20px;
+    padding: 16px;
+    margin: 18px 0;
+  }
+  .scene .emoji { font-size: clamp(2.7rem, 7vw, 4.5rem); }
+  .scene p { margin: 0; line-height: 1.45; font-weight: 700; text-align: center; }
+  .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    text-align: left;
+    padding: 16px;
+    background: #fff8ed;
+    border: 2px solid #f0d5c7;
+    border-radius: 18px;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+    min-height: 120px;
+    transition: transform .15s, border-color .15s, background .15s;
+  }
+  .option:hover { transform: translateY(-2px); border-color: #8aadd5; }
+  .option:focus-visible, .main-btn:focus-visible { outline: 3px solid #315f93; outline-offset: 3px; }
+  .letter {
+    flex: 0 0 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--blue);
+    color: white;
+    font-weight: 900;
+    font-size: 1.25rem;
+  }
+  .art { font-size: 2.4rem; display: block; margin-top: 7px; }
+  .option strong { font-size: 1rem; line-height: 1.4; }
+  .option small { display: block; font-size: .8rem; margin-top: 5px; opacity: .8; }
+  
+  .screen { display: none; }
+  .screen.active { display: block; animation: pop .25s ease-out; }
+
+  .result-card {
+    text-align: center;
+    margin: 20px auto 8px;
+    padding: clamp(20px, 4vw, 34px);
+    border-radius: 22px;
+    line-height: 1.6;
+  }
+  .result-card h2 { font-size: clamp(1.35rem, 3vw, 1.8rem); margin: 0 0 12px; }
+  .result-card p { margin: 0 auto; max-width: 600px; }
+  
+  .result-card.correct { background: var(--green); border: 2px solid #9acb9d; }
+  .result-card.try { background: var(--red); border: 2px solid #e9b9a7; }
+  .result-card.hint { background: var(--yellow); border: 2px solid #e8d18c; }
+  
+  .result-emoji { font-size: 4rem; margin-bottom: 10px; }
+  .controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .main-btn { border: 0; border-radius: 999px; padding: 12px 20px; font: inherit; font-weight: 800; cursor: pointer; }
+  .primary { background: #4f80b8; color: white; }
+  .secondary { background: #f3e6d9; color: #654d2b; }
+  .status { text-align: center; margin-top: 13px; font-size: .9rem; }
+  
+  .hint-box {
+    display: none;
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--yellow);
+    border: 2px solid #e8d18c;
+    line-height: 1.5;
+  }
+  .hint-box.show { display: block; }
+
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media(max-width: 560px) {
+    .options { grid-template-columns: 1fr; }
+    .option { min-height: 96px; }
+    .scene { gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<main class="game">
+  <!-- Halaman Pertama: Pertanyaan -->
+  <section id="questionScreen" class="screen active">
+    <header class="top">
+      <span class="badge">🎮 Kuis Interaktif • Kelas II SD</span>
+      <h1>📚 Misi Rafa: Pilih yang Tepat!</h1>
+      <p class="intro">Rafa masih ingin bermain HP, padahal waktunya belajar. Menurutmu, apa yang sebaiknya Rafa lakukan?</p>
+    </header>
+
+    <section class="scene" aria-label="Ilustrasi situasi">
+      <span class="emoji" role="img" aria-label="telepon genggam">📱</span>
+      <p>“Wah, sudah waktunya belajar!<br>Rafa harus memilih dengan bijak.”</p>
+      <span class="emoji" role="img" aria-label="buku pelajaran">📚</span>
+    </section>
+
+    <section class="options" aria-label="Pilihan jawaban">
+      <button class="option" data-choice="A">
+        <span class="letter">A</span>
+        <span><strong>Abaikan belajar,<br>lihat HP dulu.</strong><span class="art" aria-hidden="true">📱💬</span></span>
+      </button>
+      <button class="option" data-choice="B">
+        <span class="letter">B</span>
+        <span><strong>Belajar dulu,<br>nanti lihat HP.</strong><span class="art" aria-hidden="true">📖✏️📚</span></span>
+      </button>
+      <button class="option" data-choice="C">
+        <span class="letter">C</span>
+        <span><strong>Hanya membuka buku,<br>lalu lanjut bermain HP.</strong><span class="art" aria-hidden="true">📱📖📚</span></span>
+      </button>
+    </section>
+
+    <div class="controls">
+      <button id="showHint" class="main-btn primary" type="button">💡 Petunjuk</button>
+    </div>
+
+    <div id="hintBox" class="hint-box" role="status">
+      Ingat, saat waktunya belajar, kita perlu fokus. Pilih jawaban yang mendahulukan belajar sebelum bermain HP.
+    </div>
+
+    <p class="status">Pilih jawaban A, B, atau C, ya!</p>
+  </section>
+
+  <!-- Halaman Kedua: Umpan Balik Jawaban -->
+  <section id="feedbackScreen" class="screen" aria-live="polite">
+    <header class="top">
+      <span class="badge">📣 Hasil Pilihan Rafa</span>
+      <h1>Yuk, belajar dari pilihanmu!</h1>
+    </header>
+
+    <div id="resultCard" class="result-card">
+      <div id="resultEmoji" class="result-emoji">🌼</div>
+      <h2 id="feedbackTitle"></h2>
+      <p id="feedbackText"></p>
+    </div>
+
+    <p id="resultStatus" class="status"></p>
+
+    <div class="controls">
+      <button id="retry" class="main-btn secondary" type="button">🔄 Coba Lagi</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  const questionScreen = document.getElementById('questionScreen');
+  const feedbackScreen = document.getElementById('feedbackScreen');
+  const resultCard = document.getElementById('resultCard');
+  const feedbackTitle = document.getElementById('feedbackTitle');
+  const feedbackText = document.getElementById('feedbackText');
+  const resultEmoji = document.getElementById('resultEmoji');
+  const resultStatus = document.getElementById('resultStatus');
+  const hintBox = document.getElementById('hintBox');
+
+  // Web Audio API untuk menghasilkan efek suara interaktif tanpa file eksternal
+  let audioCtx = null;
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+
+  function playSound(type) {
+    try {
+      initAudio();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const now = audioCtx.currentTime;
+
+      if (type === 'correct') {
+        // Nada gembira / fanfare pendek naik (Benar)
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, index) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + index * 0.08);
+          gain.gain.setValueAtTime(0.15, now + index * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.25);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + index * 0.08);
+          osc.stop(now + index * 0.08 + 0.25);
+        });
+      } else if (type === 'try') {
+        // Nada turun (Salah / Coba lagi)
+        const notes = [350, 280]; 
+        notes.forEach((freq, index) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + index * 0.12);
+          gain.gain.setValueAtTime(0.1, now + index * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.12 + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + index * 0.12);
+          osc.stop(now + index * 0.12 + 0.3);
+        });
+      } else if (type === 'hint') {
+        // Nada netral / penasaran (Hampir benar)
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(554.37, now + 0.2);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    } catch (e) {
+      console.log("Audio play error:", e);
+    }
+  }
+
+  const messages = {
+    A: {
+      type: 'try',
+      emoji: '🌼',
+      title: 'Yuk, coba lagi!',
+      text: 'Belajar juga penting, lho! Sebaiknya simpan HP dan mulai belajar saat waktunya tiba.',
+      status: 'Belum tepat. Ingat aturan waktu belajar, lalu coba pilih lagi.'
+    },
+    B: {
+      type: 'correct',
+      emoji: '🎉',
+      title: 'Hebat! Jawabanmu benar!',
+      text: 'Kamu memilih dengan tepat! Dahulukan belajar, lalu gunakan HP setelah selesai belajar sesuai aturan keluarga.',
+      status: 'Kamu berhasil membantu Rafa memilih dengan bijak! 🌟'
+    },
+    C: {
+      type: 'hint',
+      emoji: '💡',
+      title: 'Hampir benar! Ayo, pikirkan lagi!',
+      text: 'Membuka buku saja belum cukup. Saat belajar, simpan HP agar kamu bisa fokus dan memahami pelajaran.',
+      status: 'Coba pikirkan tindakan yang membantu Rafa benar-benar fokus belajar.'
+    }
+  };
+
+  // Event listener untuk pilihan jawaban
+  document.querySelectorAll('.option').forEach(button => {
+    button.addEventListener('click', () => {
+      const choice = button.dataset.choice;
+      const result = messages[choice];
+
+      // Putar suara berdasarkan tipe hasil
+      playSound(result.type);
+
+      resultCard.className = 'result-card ' + result.type;
+      resultEmoji.textContent = result.emoji;
+      feedbackTitle.textContent = result.title;
+      feedbackText.textContent = result.text;
+      resultStatus.textContent = result.status;
+
+      // Pindah halaman
+      questionScreen.classList.remove('active');
+      feedbackScreen.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Tombol Coba Lagi
+  document.getElementById('retry').addEventListener('click', () => {
+    feedbackScreen.classList.remove('active');
+    questionScreen.classList.add('active');
+    hintBox.classList.remove('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Tombol Petunjuk
+  document.getElementById('showHint').addEventListener('click', () => {
+    hintBox.classList.toggle('show');
+  });
+</script>
+
+</body>
+</html>
